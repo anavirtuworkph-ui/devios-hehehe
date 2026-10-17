@@ -32,13 +32,19 @@ export class StageController {
   }
 
   start() {
+    if (!this.prepare()) return;
+    this.enterRoom(this.rooms[0], 'start');
+  }
+
+  // Shared sub-level setup: launch validation, checkpoint, RNG, plan, music, banner.
+  prepare() {
     const sc = this.scene;
     const save = sc.save.data;
     const v = campaign.validateLaunch(save, this.eraId, this.sub);
     if (!v.ok) {
       ui.toast(v.reason, 'bad');
       sc.scene.restart({ mode: 'safe' });
-      return;
+      return false;
     }
     if (this.sub === 0 && sc.data_.fromSafe) sc.run.hp = 0; // full health when departing from the DeVios
     sc.run.location = { era: this.eraId, sub: this.sub };
@@ -49,7 +55,7 @@ export class StageController {
     this.rooms = this.plan.rooms;
     audio.music(this.plan.isBoss ? 'boss' : this.eraId);
     ui.banner(this.era.name, `${this.sub + 1}/3 · ${this.era.subs[this.sub]}`, 2200);
-    this.enterRoom(this.rooms[0], 'start');
+    return true;
   }
 
   describe() { return `Sub-level ${this.sub + 1}/3: ${this.era.subs[this.sub]}`; }
@@ -125,7 +131,7 @@ export class StageController {
     const wave = room.waves[i];
     this.waveIndex = i;
     if (i > 0) ui.toast(`Wave ${i + 1}!`, 'bad');
-    const spots = rand.shuffle(sc.room.spots.e.map(tileCenter));
+    const spots = rand.shuffle((room.spots || sc.room.spots).e.map(tileCenter));
     this.pendingSpawns = 0;
     wave.forEach((en, k) => {
       let pt = spots[k % spots.length];
@@ -197,14 +203,15 @@ export class StageController {
   spawnClearRewards(room, st) {
     const sc = this.scene;
     if (!st.rewards) st.rewards = this.rollRewards(room);
-    const c = tileCenter(sc.room.spots.c[0]);
+    const roomSpots = room.spots || sc.room.spots;
+    const c = tileCenter(roomSpots.c[0]);
     st.rewards.forEach((rw, i) => {
       if (st.taken.has(rw.id)) return;
       const x = c.x + (i - (st.rewards.length - 1) / 2) * 28, y = c.y;
       if (rw.kind === 'weapon') this.addWeaponPickup(rw, st, x, y);
       if (rw.kind === 'chest') this.addChest(rw, st, x, y, 'small');
     });
-    const n = tileCenter(sc.room.spots.n[0]);
+    const n = tileCenter(roomSpots.n[0]);
     if (room.recruit && !sc.save.data.allies.includes(room.recruit)) this.addRecruit(room.recruit, n.x, n.y);
     if (room.special && !sc.save.data.allies.includes(room.special.ally)) this.addSpecial(room.special, n.x + (room.recruit ? 40 : 0), n.y);
   }

@@ -338,6 +338,55 @@ try {
   await page.context().close();
 
   // ---------------------------------------------------------------------------------------------
+  log('\n[9b] Hard mode: full Soul Knight-style floors');
+  page = await newPage();
+  await page.evaluate(() => { window.__ATC.newRun(); const s = window.__ATC.app.save.data; s.settings.difficulty = 'hard'; window.__ATC.app.save.commit(); window.__ATC.start({ mode: 'stage', eraId: 'precolonial', sub: 0 }); });
+  await waitFor(page, () => window.__ATC.state().mode === 'stage');
+  await sleep(1500);
+  check(await page.evaluate(() => !!window.__ATC.game_().ctrl.dg), 'hard mode builds a full floor');
+  check(await page.evaluate(() => !document.getElementById('minimap').classList.contains('hidden')), 'minimap visible');
+  await page.screenshot({ path: `${OUT}/hard-floor-start.png` });
+  for (const sub of [0, 1]) {
+    const info = await page.evaluate(() => { const d = window.__ATC.game_().ctrl.dg; return { combat: d.rooms.filter((r) => r.kind === 'combat').length, sides: d.rooms.filter((r) => r.kind === 'side').map((r) => r.side.kind) }; });
+    log(`  floor ${sub + 1}: ${info.combat} combat rooms, side rooms: ${info.sides.join(', ')}`);
+    // Clear combat rooms in path order.
+    const ids = await page.evaluate(() => window.__ATC.game_().ctrl.dg.rooms.filter((r) => r.kind === 'combat').sort((a, b) => a.combatIndex - b.combatIndex).map((r) => r.id));
+    for (const id of ids) {
+      await page.evaluate((rid) => { const c = window.__ATC.game_().ctrl; const r = c.roomById.get(rid); window.__ATC.tp(r.center.x * 16 + 8, r.center.y * 16 + 8); }, id);
+      await sleep(300);
+      for (let k = 0; k < 20; k++) {
+        const cleared = await page.evaluate((rid) => { const c = window.__ATC.game_().ctrl; return c.state(c.roomById.get(rid)).cleared; }, id);
+        if (cleared) break;
+        await page.evaluate(() => window.__ATC.killAll());
+        await sleep(500);
+      }
+      if (id === ids[1] && sub === 0) await page.screenshot({ path: `${OUT}/hard-floor-combat.png` });
+    }
+    const allClear = await page.evaluate(() => { const c = window.__ATC.game_().ctrl; return c.combatRooms().every((r) => c.state(r).cleared); });
+    check(allClear, `floor ${sub + 1}: every combat room cleared and doors reopened`);
+    // Visit side rooms (reveal hidden ones first).
+    const sides = await page.evaluate(() => window.__ATC.game_().ctrl.dg.rooms.filter((r) => r.kind === 'side').map((r) => r.id));
+    for (const id of sides) {
+      await page.evaluate((rid) => { const c = window.__ATC.game_().ctrl; const r = c.roomById.get(rid); const l = c.dg.links.find((x) => x.b === r); if (l.hidden) c.revealLink(l); window.__ATC.tp(r.center.x * 16 + 8, r.center.y * 16 + 8); }, id);
+      await sleep(1500);
+      await page.evaluate(() => window.__ATC.killAll());
+      await sleep(800);
+      await page.evaluate(() => { const g = window.__ATC.game_(); for (const it of g.interactables.filter((i) => /vault|chest|cache/i.test(typeof i.label === 'function' ? i.label() : i.label))) it.use(); });
+      await sleep(500);
+      await dismissDialogs(page);
+    }
+    // Into the time rift
+    await page.evaluate(() => { const c = window.__ATC.game_().ctrl; window.__ATC.tp(c.riftPos.x, c.riftPos.y); });
+    await waitFor(page, (n) => window.__ATC.state().sub === n, sub + 1, 10000);
+    await sleep(1200);
+  }
+  check(await page.evaluate(() => window.__ATC.app.save.data.artifacts.includes('gold_bracelet')), 'hard floor 2 vault gives the artifact');
+  const bossState = await st(page);
+  check(bossState.kind === 'boss', 'hard mode still ends the era in the boss arena');
+  check(page.errors.length === 0, `no runtime errors in hard mode${page.errors.length ? `:\n${page.errors.join('\n')}` : ''}`);
+  await page.context().close();
+
+  // ---------------------------------------------------------------------------------------------
   log('\n[10] Corrupt save handling');
   page = await newPage();
   await page.evaluate(() => localStorage.setItem('anons-time-crisis.save', '{"broken'));

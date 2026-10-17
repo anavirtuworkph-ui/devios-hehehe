@@ -71,7 +71,7 @@ export function sanitize(raw) {
   };
   const st = s.settings || {};
   out.settings = {
-    difficulty: st.difficulty === 'normal' ? 'normal' : 'easy',
+    difficulty: ['easy', 'normal', 'hard'].includes(st.difficulty) ? st.difficulty : 'easy',
     master: num(st.master, d.settings.master, 0, 1),
     music: num(st.music, d.settings.music, 0, 1),
     sfx: num(st.sfx, d.settings.sfx, 0, 1),

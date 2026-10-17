@@ -40,7 +40,7 @@ button { font-family: var(--body); font-size: 1em; color: inherit; }
 .hp-fill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(#ff6a7a, #d02040); transition: width .15s; }
 .hp.low .hp-fill { animation: pulse .6s infinite alternate; }
 .hp-text { position: absolute; inset: 0; text-align: center; font-size: .85em; line-height: calc(18px * var(--ui)); text-shadow: 1px 1px 0 #000; }
-.shards { display: flex; align-items: center; gap: 6px; font-family: var(--pixel); font-size: .6em; color: var(--gold); text-shadow: 2px 2px 0 #000; }
+.shards { padding-left: 4px; display: flex; align-items: center; gap: 6px; font-family: var(--pixel); font-size: .6em; color: var(--gold); text-shadow: 2px 2px 0 #000; }
 .shards.bump { animation: bump .25s; }
 .shard-icon { width: 14px; height: 14px; background: var(--accent); transform: rotate(45deg); box-shadow: 0 0 6px var(--accent); display: inline-block; margin: 0 3px; }
 .shard-icon[data-kind=gold] { background: #d4a017; box-shadow: 0 0 6px #ffd400; }
@@ -211,3 +211,4 @@ body.touch .items small { display: none; }
 #screen.menu-left { justify-content: flex-start; padding-left: calc(6vw + var(--sal)); }
 #screen.menu-left .menu { align-items: flex-start; text-align: left; }
 #screen.menu-left .logo { text-align: left; }
+#minimap { margin-top: 4px; background: #0b0b14cc; border: 2px solid var(--line); image-rendering: pixelated; }

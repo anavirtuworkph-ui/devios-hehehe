@@ -22,6 +22,7 @@ class UI {
           <button class="pause-btn" aria-label="Pause">II</button>
           <div class="artifacts" title="Historical artifacts"></div>
           <div class="ally"></div>
+          <canvas id="minimap" class="hidden" aria-label="Floor map"></canvas>
         </div>
         <div class="hud-bl">
           <div class="weapon"><img class="w-img" alt=""><div><div class="w-name"></div><div class="w-ammo"></div></div></div>
@@ -95,6 +96,40 @@ class UI {
     });
     set('ally', h.allyName || '', (v) => { this.$('.ally').textContent = v ? `Ally: ${v}` : 'No ally'; });
     set('buffs', h.buffsKey, () => { this.$('.buffs').innerHTML = h.buffs.map((b) => `<span class="buff ${b.bad ? 'bad' : ''}">${esc(b.label)}</span>`).join(''); });
+  }
+
+  // Hard-mode floor map. cfg: { gw, gh, rooms: [{x,y,kind,state,current}], links: [{a:{x,y}, b:{x,y}}] }
+  // state: 'visited' | 'known' (seen from a doorway) ; kinds color the squares.
+  minimap(cfg) {
+    const c = this.$('#minimap');
+    if (!cfg) { c.classList.add('hidden'); return; }
+    const S = 14, G = 6, P = 4;
+    const w = cfg.gw * (S + G) - G + P * 2, h = cfg.gh * (S + G) - G + P * 2;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    c.width = w * dpr; c.height = h * dpr;
+    c.style.width = `calc(${w}px * var(--ui))`; c.style.height = `calc(${h}px * var(--ui))`;
+    const ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    const pos = (cell) => ({ x: P + cell.x * (S + G), y: P + cell.y * (S + G) });
+    const shown = new Set(cfg.rooms.map((r) => `${r.x},${r.y}`));
+    ctx.fillStyle = '#5a5a7a';
+    for (const l of cfg.links) {
+      if (!shown.has(`${l.a.x},${l.a.y}`) || !shown.has(`${l.b.x},${l.b.y}`)) continue;
+      const a = pos(l.a), b = pos(l.b);
+      if (a.y === b.y) ctx.fillRect(Math.min(a.x, b.x) + S, a.y + S / 2 - 2, G, 4);
+      else ctx.fillRect(a.x + S / 2 - 2, Math.min(a.y, b.y) + S, 4, G);
+    }
+    const COLORS = { start: '#e8e8f0', exit: '#47e0ff', combat: '#ff5a6a', cleared: '#5a6a80', shop: '#ffd400', treasure: '#ffa040', vault: '#ffd400', healing: '#5fff8a', trial: '#ff5050', shrine: '#c080ff', rest: '#7fc8ff', hidden: '#ffffff' };
+    for (const r of cfg.rooms) {
+      const p = pos(r);
+      ctx.globalAlpha = r.state === 'visited' ? 1 : 0.45;
+      ctx.fillStyle = COLORS[r.kind] || '#888';
+      ctx.fillRect(p.x, p.y, S, S);
+      if (r.current) { ctx.globalAlpha = 1; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.strokeRect(p.x - 1, p.y - 1, S + 2, S + 2); ctx.fillStyle = '#000'; ctx.fillRect(p.x + 5, p.y + 5, 4, 4); }
+    }
+    ctx.globalAlpha = 1;
+    c.classList.remove('hidden');
   }
 
   prompt(text) {

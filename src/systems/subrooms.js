@@ -19,7 +19,7 @@ export function pickWeighted(rng, weights) {
 
 export const DEFAULT_WEIGHTS = Object.fromEntries(Object.entries(SUBROOM_TYPES).map(([k, v]) => [k, v.weight]));
 
-function makeWaves(rng, sub, difficulty, stronger) {
+export function makeWaves(rng, sub, difficulty, stronger) {
   const diff = DIFFICULTY[difficulty] || DIFFICULTY.easy;
   const pool = sub === 0 ? ['grunt', 'grunt', 'shooter', 'runner'] : ['grunt', 'shooter', 'runner', 'armored', 'bomber'];
   const base = sub === 0 ? 5 : 6;
@@ -32,10 +32,12 @@ function makeWaves(rng, sub, difficulty, stronger) {
     waves.push(wave);
   }
   // One elite per room in the second sub-level (and sometimes the first on Normal).
-  if (sub === 1 || (difficulty === 'normal' && rng.chance(0.4))) {
+  if (sub === 1 || difficulty === 'hard' || (difficulty === 'normal' && rng.chance(0.4))) {
     const last = waves[waves.length - 1];
     last[0] = { type: rng.pick(['grunt', 'armored', 'shooter']), elite: true };
   }
+  // Hard mode: the first wave of later rooms brings a second elite.
+  if (difficulty === 'hard' && sub === 1) waves[0][1] = { type: rng.pick(['armored', 'bomber', 'shooter']), elite: true };
   return waves;
 }
 

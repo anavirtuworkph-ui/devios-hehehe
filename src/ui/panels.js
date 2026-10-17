@@ -12,7 +12,9 @@ export function openSettings({ inGame = false, onReplayTutorial = null, onReset 
         <select data-k="difficulty">
           <option value="easy" ${s.difficulty === 'easy' ? 'selected' : ''}>Easy (default)</option>
           <option value="normal" ${s.difficulty === 'normal' ? 'selected' : ''}>Normal</option>
+          <option value="hard" ${s.difficulty === 'hard' ? 'selected' : ''}>Hard — full floors</option>
         </select></label>
+      <p class="d" style="color:var(--muted);margin:2px 0 6px">Hard turns each non-boss sub-level into a full floor: a maze of connected combat rooms, side rooms and a minimap, ending at a time rift. Enemies hit harder too.</p>
       <p class="d" style="color:var(--muted);margin:2px 0 6px">${inGame ? 'Difficulty changes apply from the next sub-level or room you enter.' : 'Nothing is locked behind difficulty.'}</p>
       <label>Master volume <input type="range" min="0" max="1" step="0.05" data-k="master" value="${s.master}"></label>
       <label>Music volume <input type="range" min="0" max="1" step="0.05" data-k="music" value="${s.music}"></label>

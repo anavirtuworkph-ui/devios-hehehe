@@ -22,6 +22,7 @@ import { rand } from '../systems/rng.js';
 import { openSettings, openControls } from '../ui/panels.js';
 import { touchWanted } from '../settings.js';
 import { StageController } from '../game/stage.js';
+import { HardStageController } from '../game/hardstage.js';
 import { TutorialController } from '../game/tutorial.js';
 import { SafeRoomController } from '../game/saferoom.js';
 
@@ -49,6 +50,7 @@ export class GameScene extends Phaser.Scene {
     this.layer = null;
     this.tilemap = null;
     this.enemyGroup = null;
+    this.spawnBounds = null;
     this.transitioning = false;
     this.nearInteract = undefined;
     this.bossBarsShown = false;
@@ -94,7 +96,11 @@ export class GameScene extends Phaser.Scene {
     this.hudTimer = 0;
 
     if (this.mode === 'tutorial') this.ctrl = new TutorialController(this, this.data_);
-    else if (this.mode === 'stage') this.ctrl = new StageController(this, this.data_);
+    else if (this.mode === 'stage') {
+      // Hard mode replaces the short room chains with full floors (boss arenas stay the same).
+      const hard = s.settings.difficulty === 'hard' && (this.data_.sub || 0) < 2;
+      this.ctrl = hard ? new HardStageController(this, this.data_) : new StageController(this, this.data_);
+    }
     else this.ctrl = new SafeRoomController(this, this.data_);
     this.ctrl.start();
   }
@@ -106,6 +112,7 @@ export class GameScene extends Phaser.Scene {
     window.removeEventListener('blur', this.onBlur);
     ui.prompt(null);
     ui.bossBars(null);
+    ui.minimap(null);
     ui.touch.setVisible(false);
     if (this.ctrl && this.ctrl.destroy) this.ctrl.destroy();
     this.input.removeAllListeners();
@@ -150,7 +157,7 @@ export class GameScene extends Phaser.Scene {
       for (let x = 0; x < W; x++) {
         const ch = map[y][x];
         if (spots[ch]) spots[ch].push({ x, y });
-        row.push(ch === '#' ? 1 : 0);
+        row.push(ch === '#' ? 1 : ch === ' ' ? 2 : 0); // ' ' = void outside the rooms
       }
       grid.push(row);
     }
@@ -160,7 +167,8 @@ export class GameScene extends Phaser.Scene {
       const row = [];
       for (let x = 0; x < W; x++) {
         const ch = map[y][x];
-        if (grid[y][x] === 1) row.push(floorAt(x, y + 1) ? 4 : 3);
+        if (grid[y][x] === 2) row.push(-1);
+        else if (grid[y][x] === 1) row.push(floorAt(x, y + 1) ? 4 : 3);
         else if (ch === '~') row.push(5);
         else if (ch === 'o') row.push(7);
         else {
@@ -343,6 +351,8 @@ export class GameScene extends Phaser.Scene {
   inRoomBounds(x, y) {
     if (!this.room) return true;
     const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
+    const b = this.spawnBounds; // hard-mode floors: the room currently in combat
+    if (b) return tx > b.x && ty > b.y && tx < b.x + b.w - 1 && ty < b.y + b.h - 1;
     if (tx <= 0 || ty <= 0 || tx >= this.room.W - 1 || ty >= this.room.H - 1) return false;
     return true;
   }
@@ -351,14 +361,17 @@ export class GameScene extends Phaser.Scene {
   safeSpawnPoint(entity, minDist = 80) {
     const { data, W, H } = this.room;
     const ps = this.player.sprite;
-    for (let i = 0; i < 60; i++) {
-      const tx = rand.int(1, W - 2), ty = rand.int(1, H - 2);
+    const b = this.spawnBounds;
+    for (let i = 0; i < 80; i++) {
+      const tx = b ? rand.int(b.x + 1, b.x + b.w - 2) : rand.int(1, W - 2);
+      const ty = b ? rand.int(b.y + 1, b.y + b.h - 2) : rand.int(1, H - 2);
       const t = data[ty][tx];
-      if (t > 2) continue;
+      if (t < 0 || t > 2) continue;
       if (this.layer.getTileAt(tx, ty) && SOLID.includes(this.layer.getTileAt(tx, ty).index)) continue;
       const x = tx * TILE + 8, y = ty * TILE + 8;
       if (Phaser.Math.Distance.Between(x, y, ps.x, ps.y) >= minDist) return { x, y };
     }
+    if (b) return { x: (b.x + b.w / 2) * TILE, y: (b.y + b.h / 2) * TILE };
     return { x: this.room.w / 2, y: this.room.h / 2 };
   }
 

@@ -44,4 +44,17 @@ export const DIFFICULTY = {
     bulletSpeed: 1,
     playerHp: 20,
   },
+  // Hard: Soul Knight-style full floors (see systems/dungeon.js) plus tougher stats.
+  hard: {
+    label: 'Hard',
+    enemyHp: 1.3,
+    enemyDmg: 1.3,
+    enemyCount: 1.15,
+    waves: 2,
+    healDrop: 0.06,
+    bossCooldown: 0.8,
+    telegraph: 0.85,
+    bulletSpeed: 1.15,
+    playerHp: 18,
+  },
 };

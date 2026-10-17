@@ -65,6 +65,14 @@ Each era has three short sub-levels: two with combat rooms, and a boss arena. In
 - **DeVios safe room:** time-circuit console with destinations, repair status and launch; armory and stash; upgrade station; free repair station; ally bench; artifact case; supply locker. You can't take damage there, and purchases are saved immediately.
 - **Upgrades:** run upgrades (max HP, damage, dodge, armor, shard magnet, ammo) reset with each new run. Permanent upgrades are capped and modest: +2 max HP ×3 and +5% shards ×2.
 - **Difficulty:** Easy is the default. Normal raises enemy HP, damage and count, adds second waves, shortens telegraphs and makes bosses faster. Nothing is locked behind difficulty.
+- **Hard mode (full floors):** only on Hard, sub-levels 1 and 2 of every era become Soul Knight-style floors (`src/systems/dungeon.js`, `src/game/hardstage.js`):
+  - **Layout:** one connected map on a 5×3 or 5×4 grid of rooms, joined by corridors. A floor has a start room, 5 or 6 combat rooms on the main path, 2 or 3 side branches (weighted sub-room types; floor 2 always includes the artifact vault while that artifact is missing), and an exit room with a time rift.
+  - **Combat:** walking into an uncleared combat room seals its doorways until every wave is down.
+  - **Hidden branches:** sealed by a cracked wall you can shoot or inspect.
+  - **Minimap:** shows visited rooms, plus rooms you can see through an open doorway.
+  - **Stats:** enemies get 1.3× HP and damage, more elites, faster bullets, shorter telegraphs and quicker bosses. Anon starts with 18 HP.
+  - **Boss arenas** stay the same, with the tougher stats.
+  - **Testing:** a unit test generates 480 floors and checks that every room, spot and doorway is reachable and enclosed.
 
 ## Save data
 
@@ -94,7 +102,7 @@ scripts/e2e.mjs             Playwright end-to-end run through the whole campaign
 ## Testing performed
 
 - **Unit tests** (`npm test`, 11 suites, all passing): save corruption, migration and round-trips; era unlock order; secret unlock rules; idempotent boss rewards; launch validation that prevents skipping eras; free repairs; loadout and stash; purchase validation (funds, stock, duplicates, caps); sub-room weights and guaranteed vaults; presence and price ranges of every required weapon; ≥3 attacks per boss phase; a recruit event for every ally; room templates that are enclosed with everything reachable.
-- **End-to-end** (`npm run test:e2e`, headless Chromium 1280×720), all checks passing:
+- **End-to-end** (`npm run test:e2e`, headless Chromium 1280×720), all checks passing. Besides the items below, it plays two Hard-mode floors: every combat room, every side room including the vault, and the time rift into the boss arena.
   - Real input: keyboard movement and mouse-aimed shooting in the tutorial.
   - Full play-through: the tutorial, all 5 main eras, every boss, every vault artifact, all 8 allies, the safe-room stations and purchases, launch validation, the secret era with both duo bosses, the secret ending and the canon ending.
   - Persistence across reload, defeat followed by checkpoint retry, the pause menu, and aim accuracy after a window resize.
