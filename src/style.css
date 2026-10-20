@@ -93,7 +93,8 @@ button { font-family: var(--body); font-size: 1em; color: inherit; }
 .toast.gold { border-color: var(--gold); color: #fff3b0; }
 .toast.out { opacity: 0; transform: translateX(20px); transition: all .4s; }
 #caption { position: absolute; left: 50%; bottom: calc(8% + var(--sab)); transform: translateX(-50%); width: min(92vw, 760px); background: #000c; border: 2px solid var(--line); padding: 10px 16px; font-size: 1.25em; text-align: center; line-height: 1.2; }
-#skip { position: absolute; right: calc(12px + var(--sar)); bottom: calc(12px + var(--sab)); background: var(--panel); border: 2px solid var(--line); padding: 8px 14px; cursor: pointer; z-index: 30; font-size: 1.1em; }
+/* Top-right, clear of host badges (e.g. Netlify's bottom-right one) and the captions. */
+#skip { position: absolute; right: calc(12px + var(--sar)); top: calc(12px + var(--sat)); background: var(--panel); border: 2px solid var(--line); padding: 8px 14px; cursor: pointer; z-index: 30; font-size: 1.1em; }
 #fade { position: absolute; inset: 0; background: #000; opacity: 0; transition: opacity .4s; z-index: 40; }
 #fade.on { opacity: 1; }
 #rotate-hint { position: absolute; top: calc(50px + var(--sat)); left: 50%; transform: translateX(-50%); background: var(--panel); border: 2px solid var(--gold); padding: 8px 12px; width: min(90vw, 420px); text-align: center; z-index: 25; }
