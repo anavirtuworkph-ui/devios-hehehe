@@ -84,7 +84,7 @@ export function generateDungeon({ rng, eraId, sub, difficulty = 'hard', save = n
   for (let i = 0; i < path.length - 1; i++) links.push({ a: byCell.get(`${path[i].x},${path[i].y}`), b: byCell.get(`${path[i + 1].x},${path[i + 1].y}`), hidden: false });
 
   // Side branches hang off combat rooms.
-  const branchKinds = [];
+  const branchKinds = ['history']; // every floor has a Historical Archive
   const art = ARTIFACT_BY_ERA[eraId];
   if (sub === 1 && art) branchKinds.push(save && save.artifacts.includes(art.id) ? 'treasure' : 'vault');
   for (let i = 0; i < shape.branches; i++) branchKinds.push(pickWeighted(rng, weights));

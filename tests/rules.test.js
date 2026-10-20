@@ -165,3 +165,27 @@ test('data: every required weapon exists, prices fall in spec ranges', () => {
   const recruitable = new Set(MAIN_ERAS.flatMap((e) => [...(ERAS[e].recruits || []).map((r) => r.ally), ...(ERAS[e].special || []).map((s) => s.ally)]));
   for (const a of ALLIES) assert.ok(recruitable.has(a.id), `${a.id} has a recruit event`);
 });
+
+test('history: every non-boss sub-level (normal & hard) has a Historical Archive with valid facts', async () => {
+  const { HISTORY } = await import('../src/data/history.js');
+  const { generateDungeon } = await import('../src/systems/dungeon.js');
+  const s = defaultSave();
+  for (const era of [...MAIN_ERAS, 'modern']) {
+    const h = HISTORY[era];
+    assert.ok(h && h.facts.length >= 4 && h.quiz.length >= 2, `${era} history data`);
+    for (const q of h.quiz) assert.ok(q.answer >= 0 && q.answer < q.choices.length, `${era} quiz answer index`);
+    for (let seed = 0; seed < 20; seed++) {
+      for (const sub of [0, 1]) {
+        for (const difficulty of ['easy', 'normal']) {
+          const p = planSublevel({ rng: makeRng(seed), eraId: era, sub, save: s, difficulty });
+          assert.ok(p.rooms.some((r) => r.side && r.side.kind === 'history'), `${era}/${sub} normal plan has history`);
+        }
+        const d = generateDungeon({ rng: makeRng(seed + 99), eraId: era, sub, save: s });
+        assert.ok(d.rooms.some((r) => r.side && r.side.kind === 'history'), `${era}/${sub} hard floor has history`);
+      }
+    }
+  }
+  const spanish = HISTORY.spanish.facts.map((f) => f.text).join(' ');
+  assert.ok(spanish.includes('Kataastaasan, Kagalanggalangang Katipunan ng mga Anak ng Bayan'));
+  assert.ok(HISTORY.marcos.facts.some((f) => f.text.includes('22 to 25 February 1986')));
+});

@@ -203,4 +203,6 @@ export const SUBROOM_TYPES = {
   shrine: { label: 'Temporal Anomaly', weight: 10, icon: '⧖', color: 0xc080ff },
   rest: { label: 'Rest Room', weight: 10, icon: 'z', color: 0x7fc8ff },
   hidden: { label: 'Hidden Room', weight: 5, icon: '?', color: 0xffffff },
+  // Guaranteed once per non-boss sub-level (never rolled randomly, hence weight 0).
+  history: { label: 'Historical Archive', weight: 0, icon: 'i', color: 0x9ad8ff },
 };

@@ -83,10 +83,9 @@ export function planSublevel({ rng, eraId, sub, difficulty = 'easy', save, weigh
   if (sub === 1 && artifact) {
     const owned = save && save.artifacts.includes(artifact.id);
     rooms[1].side = { id: `${rooms[1].id}-vault`, kind: owned ? 'treasure' : 'vault', artifact: owned ? null : artifact.id };
-  } else if (sub === 0 && !rooms[1].side && rng.chance(0.35)) {
-    // A second, lighter optional room (never a shop detour right before a boss: sub 2 has none).
-    const kind = pickWeighted(rng, { treasure: 25, healing: 15, rest: 10, shrine: 10 });
-    rooms[1].side = { id: `${rooms[1].id}-side`, kind, hidden: false };
   }
+  // Every non-boss sub-level has a Historical Archive with real facts about the era.
+  const histRoom = sub === 0 ? rooms[1] : rooms[0];
+  histRoom.side = { id: `${histRoom.id}-history`, kind: 'history', hidden: false };
   return { eraId, sub, isBoss: false, rooms };
 }

@@ -95,6 +95,9 @@ export class HardStageController extends StageController {
   }
 
   onEnter(r) {
+    // Each side room keeps its own objective text across visits.
+    if (this.current && this.current.kind === 'side') this.current.objective = this.subObjective;
+    this.subObjective = r.objective || null;
     this.current = r;
     this.inSub = r.kind === 'side' ? r.side : null;
     if (!this.visited.has(r.id)) {
@@ -104,6 +107,7 @@ export class HardStageController extends StageController {
         this.backDoor = r.doors[0];
         this.scene.spawnBounds = r.rect;
         buildSubroom(this, r.side, st, { spots: r.spots });
+        r.objective = this.subObjective;
         ui.banner(r.side.kind === 'vault' ? 'Artifact Vault' : SUBROOM_TYPES[r.side.kind].label, '', 1100);
       }
       if (r.kind === 'exit') ui.banner('The time rift', 'Step in when you’re ready', 1400);

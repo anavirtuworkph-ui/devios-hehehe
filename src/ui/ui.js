@@ -120,7 +120,7 @@ class UI {
       if (a.y === b.y) ctx.fillRect(Math.min(a.x, b.x) + S, a.y + S / 2 - 2, G, 4);
       else ctx.fillRect(a.x + S / 2 - 2, Math.min(a.y, b.y) + S, 4, G);
     }
-    const COLORS = { start: '#e8e8f0', exit: '#47e0ff', combat: '#ff5a6a', cleared: '#5a6a80', shop: '#ffd400', treasure: '#ffa040', vault: '#ffd400', healing: '#5fff8a', trial: '#ff5050', shrine: '#c080ff', rest: '#7fc8ff', hidden: '#ffffff' };
+    const COLORS = { start: '#e8e8f0', exit: '#47e0ff', combat: '#ff5a6a', cleared: '#5a6a80', shop: '#ffd400', treasure: '#ffa040', vault: '#ffd400', healing: '#5fff8a', trial: '#ff5050', shrine: '#c080ff', rest: '#7fc8ff', hidden: '#ffffff', history: '#9ad8ff' };
     for (const r of cfg.rooms) {
       const p = pos(r);
       ctx.globalAlpha = r.state === 'visited' ? 1 : 0.45;

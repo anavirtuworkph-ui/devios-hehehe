@@ -13,6 +13,7 @@ import { WEAPON_BY_ID, weaponsForEra } from '../data/weapons.js';
 import { openShop } from '../ui/shop.js';
 import { openArmory } from '../ui/safepanels.js';
 import { tileCenter, addNpc, addImage, addGlow } from './helpers.js';
+import { HISTORY, QUIZ_REWARD } from '../data/history.js';
 
 export function buildSubroom(ctrl, side, st, r) {
   const fn = BUILDERS[side.kind] || BUILDERS.treasure;
@@ -193,6 +194,63 @@ const BUILDERS = {
     const c = spot(r, 'c');
     addImage(sc, 'st_bench', c.x, c.y, { origin: [0.5, 0.75] });
     sc.addInteractable({ x: c.x, y: c.y, r: 26, label: 'Review inventory & swap weapons', use: () => openArmory(sc, { allowStash: true }) });
+  },
+
+  // Historical Archive: plaques with real facts about the era, plus a one-question quiz.
+  history(ctrl, side, st, r) {
+    const sc = ctrl.scene;
+    const h = HISTORY[ctrl.eraId];
+    if (!h) return BUILDERS.rest(ctrl, side, st, r);
+    ctrl.subObjective = 'Historical Archive \u2014 read the plaques, then take the curator\u2019s quiz for Time Shards.';
+    const spots = r.spots.e.map(tileCenter);
+    if (!st.facts) st.facts = rand.shuffle(h.facts.map((_, i) => i)).slice(0, Math.min(4, spots.length));
+    st.read = st.read || new Set();
+    st.facts.forEach((fi, k) => {
+      const f = h.facts[fi];
+      const p = spots[k];
+      addImage(sc, 'st_note', p.x, p.y, { origin: [0.5, 0.75] });
+      addGlow(sc, p.x, p.y, 0x9ad8ff, 10);
+      sc.addInteractable({
+        x: p.x, y: p.y, r: 24, label: () => `Read plaque: ${f.title}${st.read.has(fi) ? ' \u2714' : ''}`,
+        use: () => {
+          st.read.add(fi);
+          sc.modalPaused({ title: f.title, content: `<p>${esc(f.text)}</p><p class="d" style="color:var(--muted)">${esc(ERAS[ctrl.eraId].name)} \u00b7 real history</p>`, buttons: [{ label: 'OK', cls: 'primary', action: (m) => m.close() }] });
+        },
+      });
+    });
+    const m = spot(r, 'm');
+    addImage(sc, 'st_case', m.x, m.y, { origin: [0.5, 0.75] });
+    const n = spot(r, 'n');
+    addNpc(sc, 'ch_villager', n.x, n.y, h.curator);
+    if (st.q === undefined) st.q = rand.int(0, h.quiz.length - 1);
+    sc.addInteractable({
+      x: n.x, y: n.y, r: 24, label: () => (st.quizDone ? `Talk to the ${h.curator}` : `Take the ${h.curator}\u2019s quiz (\u25c6${QUIZ_REWARD})`),
+      use: () => {
+        if (st.quizDone) { ui.dialog([`${h.curator}: History is a time machine too \u2014 just a slower one.`]); return; }
+        const quiz = h.quiz[st.q];
+        const modal = sc.modalPaused({
+          title: 'History quiz', content: `<p>${esc(quiz.q)}</p><p class="d" style="color:var(--muted)">Hint: the plaques in this room may help. One try per visit.</p>`,
+          // Shuffle so the right answer isn't always in the same place.
+          buttons: rand.shuffle(quiz.choices.map((c, i) => ({ c, i }))).map(({ c, i }) => ({
+            label: c,
+            action: (mm) => {
+              st.quizDone = true;
+              mm.close();
+              if (i === quiz.answer) {
+                audio.play('artifact', { gap: 0 });
+                sc.combat.dropShards(n.x, n.y + 10, QUIZ_REWARD, sc.shardTexture());
+                sc.time.delayedCall(300, () => sc.combat.magnetAll());
+                ui.toast(`Correct! +${QUIZ_REWARD} Time Shards. ${quiz.explain}`, 'good');
+              } else {
+                audio.play('deny', { gap: 0 });
+                ui.toast(`Not quite. ${quiz.explain}`, 'bad');
+              }
+            },
+          })),
+        });
+        modal.el.querySelector('.m-foot').style.flexDirection = 'column';
+      },
+    });
   },
 
   hidden(ctrl, side, st, r) {

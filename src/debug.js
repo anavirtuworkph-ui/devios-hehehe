@@ -3,6 +3,7 @@ import { app } from './app.js';
 import { createRun } from './systems/run.js';
 import { ARTIFACTS } from './data/artifacts.js';
 import * as campaign from './systems/campaign.js';
+import { HISTORY } from './data/history.js';
 
 export function installDebug(game) {
   window.__ATC = {
@@ -35,6 +36,13 @@ export function installDebug(game) {
         shards: g.run && g.run.shards, hp: g.player && g.player.hp, victory: c.victory, modals: document.querySelectorAll('.modal').length,
         dialog: !document.getElementById('dialog').classList.contains('hidden'), interact: g.interactables.length,
       };
+    },
+    historyAnswer() {
+      const g = game.scene.getScene('Game'); const c = g.ctrl;
+      const r = c.dg ? c.dg.rooms.find((x) => x.side && x.side.kind === 'history') : null;
+      const st = c.state({ id: r ? r.side.id : c.inSub.id });
+      const quiz = HISTORY[c.eraId].quiz[st.q];
+      return quiz.choices[quiz.answer];
     },
     grantAll() { for (const a of ARTIFACTS) campaign.collectArtifact(app.save.data, a.id); app.save.commit(); },
     defeatMain(upTo = 5) { ['magellan', 'damaso', 'mckinley', 'saitoh', 'marcos'].slice(0, upTo).forEach((b) => campaign.recordBossDefeat(app.save.data, b)); app.save.commit(); },

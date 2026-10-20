@@ -375,6 +375,39 @@ try {
       await sleep(500);
       await dismissDialogs(page);
     }
+    if (sub === 0) {
+      check(info.sides.includes('history'), 'floor includes a Historical Archive');
+      const q = await page.evaluate(async () => {
+        const g = window.__ATC.game_(); const c = g.ctrl;
+        const r = c.dg.rooms.find((x) => x.side && x.side.kind === 'history');
+        window.__ATC.tp(r.center.x * 16 + 8, r.center.y * 16 + 8);
+        await new Promise((res) => setTimeout(res, 600));
+        const labels = g.interactables.map((i) => (typeof i.label === 'function' ? i.label() : i.label));
+        const plaque = g.interactables.find((i) => /Read plaque/.test(typeof i.label === 'function' ? i.label() : i.label));
+        plaque.use();
+        const title = document.querySelector('.modal h2').textContent;
+        document.querySelector('.modal .btn.primary').click();
+        const st = c.state({ id: r.side.id });
+        const before = g.run.shards;
+        g.interactables.find((i) => /quiz/.test(typeof i.label === 'function' ? i.label() : i.label)).use();
+        return { labels, title, before, q: st.q, quizOpen: document.querySelector('.modal h2').textContent };
+      });
+      check(q.labels.filter((l) => /Read plaque/.test(l)).length >= 3, `archive has plaques (${q.title})`);
+      check(q.quizOpen === 'History quiz', 'curator quiz opens');
+      await page.screenshot({ path: `${OUT}/history-quiz.png` });
+      // Answer correctly using the data the game used.
+      await page.evaluate(() => {
+        const g = window.__ATC.game_(); const c = g.ctrl;
+        const r = c.dg.rooms.find((x) => x.side && x.side.kind === 'history');
+        const st = c.state({ id: r.side.id });
+        window.__answer = st.q;
+      });
+      const correctLabel = await page.evaluate(() => window.__ATC.historyAnswer());
+      await page.click(`.modal .m-foot button:text-is("${correctLabel}")`);
+      await sleep(1500);
+      const after = await page.evaluate(() => window.__ATC.game_().run.shards);
+      check(after >= q.before + 8, `correct quiz answer pays Time Shards (${q.before} -> ${after})`);
+    }
     // Into the time rift
     await page.evaluate(() => { const c = window.__ATC.game_().ctrl; window.__ATC.tp(c.riftPos.x, c.riftPos.y); });
     await waitFor(page, (n) => window.__ATC.state().sub === n, sub + 1, 10000);
