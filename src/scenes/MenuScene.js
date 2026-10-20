@@ -24,11 +24,12 @@ export class MenuScene extends Phaser.Scene {
     audio.music('menu');
     this.cameras.main.setBackgroundColor('#07070f');
     // Starfield + garage floor + the DeVios, crackling with temporal energy.
+    // The backdrop extends far past the 400x230 scene so no window shape shows an edge.
     this.stars = [];
-    for (let i = 0; i < 90; i++) this.stars.push(this.add.image(rand.next() * 400, rand.next() * 140, 'star').setAlpha(rand.next()));
-    this.floor = this.add.rectangle(200, 190, 600, 100, 0x161a24);
-    this.add.rectangle(200, 141, 600, 2, 0x2a3140);
-    for (let x = -100; x < 520; x += 40) this.add.rectangle(x, 170, 1, 60, 0x222838).setAngle(20);
+    for (let i = 0; i < 520; i++) this.stars.push(this.add.image(-900 + rand.next() * 2200, -500 + rand.next() * 640, 'star').setAlpha(rand.next()));
+    this.floor = this.add.rectangle(200, 141, 4000, 1200, 0x161a24).setOrigin(0.5, 0);
+    this.add.rectangle(200, 141, 4000, 2, 0x2a3140);
+    for (let x = -1600; x < 2000; x += 40) this.add.rectangle(x, 170, 1, 60, 0x222838).setAngle(20);
     this.car = this.add.image(200, 132, 'devios_side').setOrigin(0.5, 1);
     this.glow = this.add.image(200, 132, 'devios_side_glow').setOrigin(0.5, 1).setAlpha(0);
     this.g = this.add.graphics();
@@ -48,7 +49,9 @@ export class MenuScene extends Phaser.Scene {
     // On wide screens the menu sits on the left and the DeVios is shown on the right.
     const wide = w / h > 1.25;
     document.getElementById('screen').classList.toggle('menu-left', wide);
-    cam.centerOn(wide ? 200 - (w / cam.zoom) * 0.2 : 200, wide ? 100 : 112);
+    // Tall (portrait) screens: push the scene down so the DeVios sits below the buttons.
+    const tall = h > w * 1.2;
+    cam.centerOn(wide ? 200 - (w / cam.zoom) * 0.2 : 200, wide ? 100 : tall ? 132 - (h / cam.zoom) * 0.36 : 112);
   }
 
   update(time, delta) {
