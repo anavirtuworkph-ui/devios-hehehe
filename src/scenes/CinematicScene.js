@@ -109,6 +109,8 @@ export class CinematicScene extends Phaser.Scene {
   placeCar(x = W / 2 + 30, y = 140, key = 'devios_side') {
     this.car = this.add.image(x, y, key).setOrigin(0.5, 1).setDepth(10);
     this.carGlow = this.add.image(x, y, 'devios_side_glow').setOrigin(0.5, 1).setDepth(11).setAlpha(0);
+    // Flight mode: hover gently on the folded wheels.
+    this.tweens.add({ targets: [this.car, this.carGlow], y: y - 3, yoyo: true, repeat: -1, duration: 1100, ease: 'Sine.easeInOut' });
     return this.car;
   }
 

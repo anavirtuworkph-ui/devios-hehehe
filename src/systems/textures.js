@@ -196,9 +196,13 @@ const VIOS = { body: '#c9ced6', bodyDark: '#8e95a1', bodyLight: '#eef1f5', glass
 // Top-down (car faces up). 44 x 80.
 function drawViosTop(ctx, glow) {
   const g = glow ? '#e8ffff' : VIOS.glow;
-  // Tyres
-  R(ctx, '#111', 3, 14, 4, 12); R(ctx, '#111', 37, 14, 4, 12);
-  R(ctx, '#111', 3, 54, 4, 12); R(ctx, '#111', 37, 54, 4, 12);
+  // Flight-mode wheels: folded flat, so from above they show as hover discs under the body
+  for (const [wx, wy] of [[6, 20], [38, 20], [6, 60], [38, 60]]) {
+    ctx.fillStyle = glow ? '#e8ffff' : VIOS.glow; ctx.beginPath(); ctx.arc(wx, wy, 7.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(wx, wy, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#9aa0aa'; ctx.beginPath(); ctx.arc(wx, wy, 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = glow ? '#e8ffff' : VIOS.glow; ctx.beginPath(); ctx.arc(wx, wy, 1.6, 0, Math.PI * 2); ctx.fill();
+  }
   // Body silhouette (rounded sedan)
   ctx.fillStyle = VIOS.body;
   ctx.beginPath();
@@ -220,13 +224,15 @@ function drawViosTop(ctx, glow) {
   ctx.beginPath(); ctx.moveTo(10, 22); ctx.lineTo(34, 22); ctx.lineTo(31, 31); ctx.lineTo(13, 31); ctx.fill();
   R(ctx, VIOS.glassHi, 14, 24, 6, 1);
   // Roof
-  R(ctx, VIOS.bodyLight, 12, 31, 20, 18);
-  R(ctx, VIOS.bodyDark, 12, 31, 1, 18); R(ctx, VIOS.bodyDark, 31, 31, 1, 18);
+  R(ctx, VIOS.bodyLight, 12, 31, 20, 16);
+  R(ctx, VIOS.bodyDark, 12, 31, 1, 16); R(ctx, VIOS.bodyDark, 31, 31, 1, 16);
+  R(ctx, '#20232a', 21, 45, 2, 2); // shark-fin antenna
   // Roof-mounted flux light bar (time machine add-on)
   R(ctx, '#333', 15, 36, 14, 4); R(ctx, g, 16, 37, 12, 2);
   // Rear window
   ctx.fillStyle = VIOS.glass;
-  ctx.beginPath(); ctx.moveTo(13, 49); ctx.lineTo(31, 49); ctx.lineTo(33, 55); ctx.lineTo(11, 55); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(13, 47); ctx.lineTo(31, 47); ctx.lineTo(33, 55); ctx.lineTo(11, 55); ctx.fill();
+  R(ctx, VIOS.glassHi, 15, 49, 5, 1);
   // Mirrors
   R(ctx, VIOS.bodyDark, 2, 23, 3, 3); R(ctx, VIOS.bodyDark, 39, 23, 3, 3);
   // Rear-mounted temporal reactor on the trunk
@@ -249,65 +255,104 @@ function drawViosTop(ctx, glow) {
   R(ctx, g, 18, 77, 2, 2); R(ctx, g, 21, 77, 2, 2); R(ctx, g, 24, 77, 2, 2);
 }
 
-// Side view (car faces right). 132 x 52.
+// Side view (car faces right). 132 x 52. Traced from a reference photo of a silver
+// Toyota Vios sedan (3rd-gen facelift): notchback roof, long flat trunk deck, wedge tail
+// lamp, black B-pillar, sloping hood with swept headlight and a deep front bumper.
+// Wheels are folded flat underneath in DeLorean-style "flight mode", with hover glow.
 function drawViosSide(ctx, glow, tc = true) {
   const g = glow ? '#e8ffff' : VIOS.glow;
-  // Under-body glow coils
-  R(ctx, g, 22, 41, 88, 2);
-  // Body
+  const W1 = 29.5, W2 = 104.5, AY = 42; // wheel-arch centres (wheelbase ~61% of length)
+  // Hover glow beneath the car
+  ctx.fillStyle = g;
+  ctx.globalAlpha = 0.55;
+  ctx.beginPath(); ctx.ellipse(W1, 49, 11, 2.2, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(W2, 49, 11, 2.2, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+  R(ctx, g, 42, 46, 50, 1);
+  // Body silhouette
   ctx.fillStyle = VIOS.body;
   ctx.beginPath();
-  ctx.moveTo(4, 34); // rear bumper
-  ctx.lineTo(6, 24); ctx.lineTo(26, 21); // trunk deck
-  ctx.quadraticCurveTo(36, 8, 52, 7); // C-pillar to roof
-  ctx.lineTo(74, 7);
-  ctx.quadraticCurveTo(84, 8, 94, 19); // windshield slope
-  ctx.lineTo(118, 23); // long hood
-  ctx.quadraticCurveTo(128, 25, 128, 32); // nose
-  ctx.lineTo(126, 40); ctx.lineTo(6, 40); ctx.closePath(); ctx.fill();
-  // Lower body darker band + rocker
-  R(ctx, VIOS.bodyDark, 8, 34, 118, 6);
-  R(ctx, VIOS.bodyLight, 30, 25, 86, 1); // shoulder crease
-  // Windows
+  ctx.moveTo(6, 41.5); // rear bumper bottom
+  ctx.quadraticCurveTo(4, 36, 4.4, 20); // rear face
+  ctx.lineTo(6, 18.2); // trunk lid edge
+  ctx.lineTo(19, 17.6); // long flat trunk deck
+  ctx.quadraticCurveTo(28, 15, 36, 10.8); // rear window
+  ctx.quadraticCurveTo(58, 6, 82.4, 11.2); // gently arched roof
+  ctx.quadraticCurveTo(89, 15, 96, 20.3); // windshield
+  ctx.quadraticCurveTo(107, 22.5, 114, 25.6); // sloping hood
+  ctx.quadraticCurveTo(122, 27, 125.5, 29.4); // nose
+  ctx.quadraticCurveTo(128.5, 31, 128, 36); // front bumper face
+  ctx.lineTo(127.5, 42.6);
+  ctx.lineTo(122.5, 44.5); // chin
+  ctx.lineTo(8, 44.5);
+  ctx.closePath();
+  ctx.fill();
+  // Black rocker / lower sill between the wheels
+  R(ctx, '#2a2d34', 39, 42, 56, 2);
+  R(ctx, VIOS.bodyDark, 6, 39, 120, 3);
+  // Wheel arches (empty: wheels are folded flat for flight)
+  ctx.fillStyle = '#15161c';
+  for (const wx of [W1, W2]) { ctx.beginPath(); ctx.arc(wx, AY + 1, 10, Math.PI, 0); ctx.lineTo(wx + 10, 45); ctx.lineTo(wx - 10, 45); ctx.fill(); }
+  // Greenhouse: dark window frame, then glass
+  ctx.fillStyle = '#20232a';
+  ctx.beginPath(); ctx.moveTo(30.5, 20); ctx.lineTo(36.5, 11.3); ctx.quadraticCurveTo(58, 7, 82.8, 12.3); ctx.lineTo(94, 20.8); ctx.closePath(); ctx.fill();
   ctx.fillStyle = VIOS.glass;
-  ctx.beginPath(); ctx.moveTo(31, 21); ctx.quadraticCurveTo(40, 11, 52, 10); ctx.lineTo(60, 10); ctx.lineTo(60, 21); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(63, 10); ctx.lineTo(74, 10); ctx.quadraticCurveTo(82, 11, 89, 20); ctx.lineTo(63, 21); ctx.fill();
-  R(ctx, VIOS.bodyDark, 61, 10, 2, 11); // B-pillar
-  R(ctx, VIOS.glassHi, 66, 12, 8, 1);
-  // Time circuits glow through the side window
-  if (tc) { R(ctx, '#ff3030', 66, 16, 4, 1); R(ctx, '#30ff60', 71, 16, 4, 1); R(ctx, '#ffb020', 76, 16, 4, 1); }
-  // Door lines and handles
-  R(ctx, VIOS.bodyDark, 61, 21, 1, 14); R(ctx, VIOS.bodyDark, 92, 22, 1, 13);
-  R(ctx, VIOS.bodyDark, 52, 27, 5, 1); R(ctx, VIOS.bodyDark, 82, 27, 5, 1);
-  // Mirror
-  R(ctx, VIOS.bodyDark, 89, 18, 4, 3);
-  // Headlight (sleek) + big lower grille (Vios signature face)
-  R(ctx, '#dfe9ff', 118, 25, 8, 3); R(ctx, '#9ab0ff', 121, 26, 4, 1);
-  R(ctx, VIOS.grille, 120, 31, 7, 7);
-  R(ctx, '#333', 121, 33, 5, 1); R(ctx, '#333', 121, 35, 5, 1);
-  // Tail light
-  R(ctx, VIOS.tail, 5, 25, 4, 5);
-  // Rear-mounted temporal reactor (sticks up above the trunk)
-  R(ctx, '#555b66', 6, 12, 20, 11);
-  R(ctx, '#2a2e36', 8, 14, 16, 7);
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(16, 17, 3, 0, Math.PI * 2); ctx.fill();
-  R(ctx, '#7a808c', 10, 9, 3, 4); R(ctx, '#7a808c', 19, 9, 3, 4);
-  R(ctx, g, 11, 8, 1, 1); R(ctx, g, 20, 8, 1, 1);
-  // Exposed cables looping from the reactor along the body
+  ctx.beginPath(); ctx.moveTo(32.5, 19.3); ctx.lineTo(37.5, 12.5); ctx.quadraticCurveTo(58, 8.4, 82, 13.4); ctx.lineTo(91.5, 20.2); ctx.closePath(); ctx.fill();
+  R(ctx, '#20232a', 59, 9.5, 2, 11); // black B-pillar
+  R(ctx, '#20232a', 87, 13, 1, 7); // front quarter-glass divider
+  R(ctx, VIOS.glassHi, 64, 13, 10, 1);
+  R(ctx, VIOS.glassHi, 40, 13, 9, 1);
+  // Time circuits glow through the front side window
+  if (tc) { R(ctx, '#ff3030', 65, 16, 4, 1); R(ctx, '#30ff60', 70, 16, 4, 1); R(ctx, '#ffb020', 75, 16, 4, 1); }
+  // Shoulder character line (headlight -> tail lamp)
+  for (let x = 21; x <= 118; x++) R(ctx, VIOS.bodyLight, x, Math.round(23.1 + (x - 21) * 0.043), 1, 1);
+  // Lower door crease, rising slightly toward the rear
+  for (let x = 40; x <= 93; x++) R(ctx, VIOS.bodyDark, x, Math.round(37.3 - (x - 40) * 0.02), 1, 1);
+  // Door shut lines and handles
+  R(ctx, VIOS.bodyDark, 32, 21, 1, 15);
+  R(ctx, VIOS.bodyDark, 60, 21, 1, 21);
+  R(ctx, VIOS.bodyDark, 94, 21, 1, 18);
+  R(ctx, VIOS.bodyDark, 37, 24, 4, 1); R(ctx, VIOS.bodyDark, 65, 25, 4, 1);
+  // Door mirror
+  R(ctx, VIOS.bodyDark, 86, 18, 5, 3); R(ctx, '#20232a', 88, 21, 2, 1);
+  // Shark-fin antenna at the rear of the roof
+  ctx.fillStyle = '#20232a'; ctx.beginPath(); ctx.moveTo(35, 11); ctx.lineTo(38, 8.4); ctx.lineTo(40, 10.6); ctx.fill();
+  // Swept-back headlight
+  ctx.fillStyle = '#dfe9ff'; ctx.beginPath(); ctx.moveTo(109, 24.8); ctx.lineTo(125.5, 28.6); ctx.lineTo(124.5, 30.6); ctx.lineTo(112, 27.4); ctx.fill();
+  R(ctx, '#9ab0ff', 115, 28, 8, 1);
+  // Deep front bumper with black lower grille and corner intake
+  ctx.fillStyle = VIOS.grille; ctx.beginPath(); ctx.moveTo(123, 34); ctx.lineTo(128.3, 34); ctx.lineTo(127.8, 42); ctx.lineTo(122.5, 43.5); ctx.fill();
+  for (let y = 35; y < 42; y += 2) for (let x = 124 + (y % 4 === 1 ? 1 : 0); x < 128; x += 2) R(ctx, '#3a3d46', x, y, 1, 1);
+  R(ctx, VIOS.grille, 117, 37, 4, 2);
+  // Long wedge tail lamp wrapping onto the rear fender
+  ctx.fillStyle = VIOS.tail; ctx.beginPath(); ctx.moveTo(4.6, 21.4); ctx.lineTo(20, 22.4); ctx.lineTo(18.5, 24.6); ctx.lineTo(4.8, 25.6); ctx.fill();
+  R(ctx, '#ff7080', 6, 22.5, 11, 1);
+  R(ctx, '#8a1020', 5, 37, 3, 1); // rear bumper reflector
+  // Plate
+  R(ctx, '#f0f0f0', 5, 28, 6, 3); R(ctx, '#2040a0', 6, 29, 4, 1);
+  // ---- Time-machine hardware ----
+  // Rear-mounted temporal reactor sitting on the long trunk deck, twin exhaust vents
+  // (kept compact and against the rear edge so the sedan's trunk notch stays visible)
+  R(ctx, '#555b66', 4, 11, 10, 7);
+  R(ctx, '#2a2e36', 5, 12, 8, 4);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(9, 14, 1.8, 0, Math.PI * 2); ctx.fill();
+  R(ctx, '#7a808c', 5, 8, 2, 3); R(ctx, '#7a808c', 11, 8, 2, 3);
+  R(ctx, g, 5, 7, 1, 1); R(ctx, g, 12, 7, 1, 1);
+  // Exposed cables from the reactor along the body to the front arch
   ctx.lineWidth = 1.5;
   VIOS.cable.forEach((c, i) => {
     ctx.strokeStyle = c;
-    ctx.beginPath(); ctx.moveTo(24, 15 + i * 2); ctx.quadraticCurveTo(40, 33 + i, 70 + i * 6, 31 + i); ctx.quadraticCurveTo(95, 30, 112, 29 + i); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(13, 14 + i); ctx.quadraticCurveTo(24, 30 + i, 60, 31 + i); ctx.quadraticCurveTo(84, 30, 94, 34 + i); ctx.stroke();
   });
-  // Side vents (DeLorean-style coil housings)
-  for (let i = 0; i < 3; i++) R(ctx, '#2a2e36', 98 + i * 4, 30, 2, 4);
-  // Plate
-  R(ctx, '#f0f0f0', 7, 31, 8, 3); R(ctx, '#2040a0', 8, 32, 6, 1);
-  // Wheels
-  for (const wx of [28, 104]) {
-    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(wx, 40, 8, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#9aa0aa'; ctx.beginPath(); ctx.arc(wx, 40, 4.5, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(wx, 40, 1.6, 0, Math.PI * 2); ctx.fill();
+  // DeLorean-style coil housings on the rear door
+  for (let i = 0; i < 3; i++) R(ctx, '#2a2e36', 44 + i * 4, 29, 2, 4);
+  // Flight-mode wheels: folded 90 degrees, tread facing down, hover discs glowing
+  for (const wx of [W1, W2]) {
+    R(ctx, '#2a2e36', wx - 1, 36, 2, 9); // folding strut
+    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.ellipse(wx, 46, 10, 2.6, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#9aa0aa'; ctx.beginPath(); ctx.ellipse(wx, 45.5, 6.5, 1.5, 0, 0, Math.PI * 2); ctx.fill();
+    R(ctx, g, wx - 2, 45, 4, 1);
+    R(ctx, g, wx - 8, 48, 16, 1);
   }
 }
 

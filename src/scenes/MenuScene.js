@@ -32,6 +32,8 @@ export class MenuScene extends Phaser.Scene {
     for (let x = -1600; x < 2000; x += 40) this.add.rectangle(x, 170, 1, 60, 0x222838).setAngle(20);
     this.car = this.add.image(200, 132, 'devios_side').setOrigin(0.5, 1);
     this.glow = this.add.image(200, 132, 'devios_side_glow').setOrigin(0.5, 1).setAlpha(0);
+    // Flight mode: the DeVios hovers gently on its folded wheels.
+    this.tweens.add({ targets: [this.car, this.glow], y: 128, yoyo: true, repeat: -1, duration: 1100, ease: 'Sine.easeInOut' });
     this.g = this.add.graphics();
     this.anon = this.add.sprite(124, 134, 'ch_anon', 0).setOrigin(0.5, 1);
     this.tweens.add({ targets: this.anon, y: 132, yoyo: true, repeat: -1, duration: 600 });
