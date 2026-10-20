@@ -166,11 +166,18 @@ test('data: every required weapon exists, prices fall in spec ranges', () => {
   for (const a of ALLIES) assert.ok(recruitable.has(a.id), `${a.id} has a recruit event`);
 });
 
-test('history: every non-boss sub-level (normal & hard) has a Historical Archive with valid facts', async () => {
+test('history: every non-boss main-era sub-level (normal & hard) has a Historical Archive; 202X has none with valid facts', async () => {
   const { HISTORY } = await import('../src/data/history.js');
   const { generateDungeon } = await import('../src/systems/dungeon.js');
   const s = defaultSave();
-  for (const era of [...MAIN_ERAS, 'modern']) {
+  assert.equal(HISTORY.modern, undefined, '202X has no historical facts');
+  for (let seed = 0; seed < 20; seed++) {
+    for (const sub of [0, 1]) {
+      assert.ok(!planSublevel({ rng: makeRng(seed), eraId: 'modern', sub, save: s }).rooms.some((r) => r.side && r.side.kind === 'history'), '202X plan has no archive');
+      assert.ok(!generateDungeon({ rng: makeRng(seed), eraId: 'modern', sub, save: s }).rooms.some((r) => r.side && r.side.kind === 'history'), '202X floor has no archive');
+    }
+  }
+  for (const era of MAIN_ERAS) {
     const h = HISTORY[era];
     assert.ok(h && h.facts.length >= 4 && h.quiz.length >= 2, `${era} history data`);
     for (const q of h.quiz) assert.ok(q.answer >= 0 && q.answer < q.choices.length, `${era} quiz answer index`);

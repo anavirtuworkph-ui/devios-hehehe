@@ -4,6 +4,7 @@ import { COMBAT_ROOMS, SUB_ROOM } from '../data/rooms.js';
 import { ARTIFACT_BY_ERA } from '../data/artifacts.js';
 import { ERAS } from '../data/eras.js';
 import { makeWaves, pickWeighted, DEFAULT_WEIGHTS } from './subrooms.js';
+import { HISTORY } from '../data/history.js';
 
 export const CELL_W = 30;
 export const CELL_H = 19;
@@ -84,7 +85,7 @@ export function generateDungeon({ rng, eraId, sub, difficulty = 'hard', save = n
   for (let i = 0; i < path.length - 1; i++) links.push({ a: byCell.get(`${path[i].x},${path[i].y}`), b: byCell.get(`${path[i + 1].x},${path[i + 1].y}`), hidden: false });
 
   // Side branches hang off combat rooms.
-  const branchKinds = ['history']; // every floor has a Historical Archive
+  const branchKinds = HISTORY[eraId] ? ['history'] : []; // archives in main eras only (not 202X)
   const art = ARTIFACT_BY_ERA[eraId];
   if (sub === 1 && art) branchKinds.push(save && save.artifacts.includes(art.id) ? 'treasure' : 'vault');
   for (let i = 0; i < shape.branches; i++) branchKinds.push(pickWeighted(rng, weights));

@@ -3,6 +3,7 @@ import { COMBAT_ROOMS, SUBROOM_TYPES } from '../data/rooms.js';
 import { ARTIFACT_BY_ERA } from '../data/artifacts.js';
 import { ERAS } from '../data/eras.js';
 import { DIFFICULTY } from '../config.js';
+import { HISTORY } from '../data/history.js';
 
 export const OPTIONAL_ROOM_CHANCE = 0.75;
 
@@ -84,8 +85,14 @@ export function planSublevel({ rng, eraId, sub, difficulty = 'easy', save, weigh
     const owned = save && save.artifacts.includes(artifact.id);
     rooms[1].side = { id: `${rooms[1].id}-vault`, kind: owned ? 'treasure' : 'vault', artifact: owned ? null : artifact.id };
   }
-  // Every non-boss sub-level has a Historical Archive with real facts about the era.
-  const histRoom = sub === 0 ? rooms[1] : rooms[0];
-  histRoom.side = { id: `${histRoom.id}-history`, kind: 'history', hidden: false };
+  // Every non-boss sub-level of a main era has a Historical Archive with real facts
+  // (the satirical 202X era deliberately has none).
+  if (HISTORY[eraId]) {
+    const histRoom = sub === 0 ? rooms[1] : rooms[0];
+    histRoom.side = { id: `${histRoom.id}-history`, kind: 'history', hidden: false };
+  } else if (sub === 0 && !rooms[1].side && rng.chance(0.35)) {
+    const kind = pickWeighted(rng, { treasure: 25, healing: 15, rest: 10, shrine: 10 });
+    rooms[1].side = { id: `${rooms[1].id}-side`, kind, hidden: false };
+  }
   return { eraId, sub, isBoss: false, rooms };
 }

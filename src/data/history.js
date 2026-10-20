@@ -1,5 +1,5 @@
 // Real historical facts for the Historical Archive sub-room (one is guaranteed in every
-// non-boss sub-level). Facts are real history; only the game's boss fights are fiction.
+// non-boss sub-level of the five main eras; the satirical 202X era has none). Facts are real history; only the game's boss fights are fiction.
 // quiz: { q, choices, answer (index), explain }
 export const HISTORY = {
   precolonial: {
@@ -84,20 +84,6 @@ export const HISTORY = {
       { q: 'What does EDSA stand for?', choices: ['Epifanio de los Santos Avenue', 'Emilio de la Salle Avenue', 'Ermita–Divisoria–San Andres', 'España de los Santos Avenue'], answer: 0, explain: 'EDSA is Epifanio de los Santos Avenue, named after the historian.' },
       { q: 'Which proclamation placed the Philippines under martial law in 1972?', choices: ['Proclamation No. 1081', 'Proclamation No. 2045', 'Republic Act 1425', 'Proclamation No. 1'], answer: 0, explain: 'Proclamation No. 1081, dated 21 September 1972.' },
       { q: 'Who was sworn in as president on 25 February 1986?', choices: ['Fidel V. Ramos', 'Salvador Laurel', 'Corazon Aquino', 'Juan Ponce Enrile'], answer: 2, explain: 'Corazon Aquino became president on 25 February 1986.' },
-    ],
-  },
-  modern: {
-    curator: 'Glitching Museum Kiosk',
-    facts: [
-      { title: 'The South China Sea ruling', text: 'On 12 July 2016, an arbitral tribunal in The Hague ruled in favor of the Philippines in its case over claims in the South China Sea (West Philippine Sea).' },
-      { title: 'The 2022 election', text: 'The Philippine national elections were held on 9 May 2022.' },
-      { title: 'The pandemic lockdown', text: 'In mid-March 2020, an enhanced community quarantine was placed over Luzon to slow the spread of COVID-19, one of the longest lockdowns in the world.' },
-      { title: 'One term only', text: 'Under the 1987 Constitution, the president serves a single six-year term and cannot be re-elected.' },
-      { title: 'A reminder from the kiosk', text: 'The rest of this era is satire. These plaques are the only "real" thing here — and even they flicker.' },
-    ],
-    quiz: [
-      { q: 'How long is a Philippine president’s term under the 1987 Constitution?', choices: ['Four years, renewable once', 'One six-year term', 'Five years, renewable once', 'No fixed term'], answer: 1, explain: 'The president serves a single six-year term.' },
-      { q: 'When did the arbitral tribunal rule on the South China Sea case?', choices: ['12 July 2016', '12 June 1898', '9 May 2022', '25 February 1986'], answer: 0, explain: 'The ruling came on 12 July 2016.' },
     ],
   },
 };
